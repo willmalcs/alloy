@@ -33,8 +33,9 @@ impl<T, P: fmt::Debug, E, N> fmt::Debug for Event<T, P, E, N> {
 impl<'a, T: Transport + Clone, P: Provider<T, N>, E: SolEvent, N: Network> Event<T, &'a P, E, N> {
     // `sol!` macro constructor, see `#[sol(rpc)]`. Not public API.
     // NOTE: please avoid changing this function due to its use in the `sol!` macro.
-    pub fn new_sol(provider: &'a P, address: &Address) -> Self { // potentially need to add a third argument for the filter, "hash" that is the keccak256 hash of the event signature
-        // let topic_keccak = E::ANONYMOUS 
+    pub fn new_sol(provider: &'a P, address: &Address) -> Self {
+        // keccak256 hash of the event signature needed for the filter
+        // check that the event is not anonymous to include the event signature in the filter
         if E::ANONYMOUS {
             Self::new(provider, Filter::new().address(*address))
         } else {
