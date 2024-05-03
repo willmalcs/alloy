@@ -11,6 +11,8 @@ pub(crate) enum PubSubInstruction {
     GetSub(U256, oneshot::Sender<RawSubscription>),
     /// Unsubscribe from a subscription.
     Unsubscribe(U256),
+    /// Reconnect all subscriptions.
+    ReconnectSubs,
 }
 
 impl fmt::Debug for PubSubInstruction {
@@ -19,6 +21,7 @@ impl fmt::Debug for PubSubInstruction {
             Self::Request(arg0) => f.debug_tuple("Request").field(arg0).finish(),
             Self::GetSub(arg0, _) => f.debug_tuple("GetSub").field(arg0).finish(),
             Self::Unsubscribe(arg0) => f.debug_tuple("Unsubscribe").field(arg0).finish(),
+            Self::ReconnectSubs => f.debug_tuple("ReconnectSubs").finish(),
         }
     }
 }

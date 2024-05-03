@@ -101,6 +101,13 @@ impl PubSubFrontend {
         debug_assert_ne!(channel_size, 0, "channel size must be non-zero");
         self.channel_size.store(channel_size, Ordering::Relaxed);
     }
+
+    /// Reconnect all subscriptions.
+    pub fn reconnect_all_subscriptions(&self) -> TransportResult<()> {
+        self.tx
+            .send(PubSubInstruction::ReconnectSubs)
+            .map_err(|_| TransportErrorKind::backend_gone())
+    }
 }
 
 impl tower::Service<RequestPacket> for PubSubFrontend {

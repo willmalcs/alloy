@@ -102,6 +102,24 @@ impl<T: PubSubConnect> PubSubService<T> {
         Ok(())
     }
 
+    fn reconnect_subs(&mut self) -> TransportResult<()> {
+        // Drop all server IDs. We'll re-insert them as we get responses.
+        self.subs.drop_server_ids();
+
+        for (_, sub) in self.subs.iter() {
+            let req = sub.request().to_owned();
+            // 0 is a dummy value, we don't care about the channel size here,
+            // as none of these will result in channel creation.
+            let (in_flight, _) = InFlight::new(req.clone(), 0);
+            self.in_flights.insert(in_flight);
+
+            let msg = req.into_serialized();
+            self.handle.to_socket.send(msg).map_err(|_| TransportErrorKind::backend_gone())?;
+        }
+
+        Ok(())
+    }
+
     /// Dispatch a request to the socket.
     fn dispatch_request(&mut self, brv: Box<RawValue>) -> TransportResult<()> {
         self.handle.to_socket.send(brv).map(drop).map_err(|_| TransportErrorKind::backend_gone())
@@ -149,6 +167,7 @@ impl<T: PubSubConnect> PubSubService<T> {
                 Ok(())
             }
             PubSubInstruction::Unsubscribe(alias) => self.service_unsubscribe(alias),
+            PubSubInstruction::ReconnectSubs => self.reconnect_subs(),
         }
     }
 
