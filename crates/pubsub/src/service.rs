@@ -103,6 +103,9 @@ impl<T: PubSubConnect> PubSubService<T> {
     }
 
     fn reconnect_subs(&mut self) -> TransportResult<()> {
+        // Re-subscribe to all active subscriptions
+        debug!(count = self.subs.len(), "Re-starting active subscriptions");
+
         // Drop all server IDs. We'll re-insert them as we get responses.
         self.subs.drop_server_ids();
 
